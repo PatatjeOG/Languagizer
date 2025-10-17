@@ -2,12 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Languagizer</title>
+  <title>Languagizer</title>  <link rel="icon" href="icons/icon16.png">
   <link rel="stylesheet" href="popup.css">
 
 </head>
 <body>
-  <h1>🌐 Languagizer</h1>
+  <h1><img src="icons/icon32.png" alt="Languagizer Logo"> Languagizer</h1>
 
   <label for="vaultSelect">Active Language</label>
   <select id="vaultSelect"><option value="">-- Select --</option></select>
@@ -24,14 +24,14 @@
   <hr>
   <button id="saveBtn">💾 Save</button>
   <button id="exportBtn">⬇️ Export</button>
-  <label for="importFile" class="button">⬆️ Import</label>
-  <input id="importFile" type="file" accept=".lngz" style="display:none;">
+  <label for="importFile" class="button">⬆️ Import</label> <!-- Styled label for hidden file input -->
+  <input id="importFile" type="file" accept=".lngz" class="hidden-file-input">
 
   <hr>
   <h3>Vault Management</h3>
   <button id="exportVault">📦 Export Vault</button>
-  <label for="importVault" class="button">📂 Import Vault</label>
-  <input id="importVault" type="file" accept=".zip" style="display:none;">
+  <label for="importVault" class="button">📂 Import Vault</label> <!-- Styled label for hidden file input -->
+  <input id="importVault" type="file" accept=".zip" class="hidden-file-input">
 
   <hr>
   <h3>Decode Secret Message</h3>
@@ -41,7 +41,7 @@
 
   <div id="message" class="message"></div>
   <hr>
-  <footer style="text-align:center; font-size:12px; margin-top:10px;">
+  <footer>    <img src="icons/icon16.png" alt="logo">
     <a href="meta/about.html" target="_blank">About</a> |
     <a href="meta/policy.html" target="_blank">Privacy Policy</a> |
     <a href="meta/terms.html" target="_blank">Terms</a>

@@ -19,6 +19,21 @@ h1 {
   text-align: center;
   color: #2c3e50;
   text-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 img {
+  margin-right: 8px;
+}
+
+h3 {
+  font-size: 16px;
+  margin-top: 20px;
+  margin-bottom: 4px;
+  color: #3e4e60;
+  text-align: center;
 }
 
 /* ---------- LABELS & INPUTS ---------- */
@@ -71,6 +86,11 @@ label.button {
   transition: all 0.2s;
 }
 
+/* For hiding the default file input but keeping it accessible */
+.hidden-file-input {
+  display: none;
+}
+
 button:hover,
 label.button:hover {
   background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
@@ -115,10 +135,15 @@ tr:hover td {
 footer {
   text-align: center;
   font-size: 12px;
-  margin-top: 14px;
   color: #777;
 }
 
+footer img {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
 footer a {
   color: #3498db;
   text-decoration: none;
@@ -149,6 +174,14 @@ hr {
   h1 {
     color: #f0f0f0;
     text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+
+  h3 {
+    color: #e0e0e0;
+  }
+
+  h1 img {
+    filter: brightness(1.1);
   }
 
   input[type="text"],

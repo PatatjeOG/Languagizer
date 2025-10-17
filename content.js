@@ -28,6 +28,9 @@ document.addEventListener("input", (event) => {
   const target = event.target;
   if (!target || !("value" in target)) return;
 
+  // Early exit if the trigger sequence isn't present
+  if (!target.value.includes("!(")) return;
+
   const triggerRegex = /!\(([^)]+)\)/g;
   let value = target.value;
   const matches = [...value.matchAll(triggerRegex)];

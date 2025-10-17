@@ -2,7 +2,11 @@
 function showMessage(text, type="info") {
   const el = document.getElementById("message");
   el.textContent = text;
-  el.style.color = type === "error" ? "#b33" : "#333";
+  if (type === "error") {
+    el.style.color = "#e57373"; // A brighter red for both themes
+  } else {
+    el.style.color = ""; // Reset color to let CSS handle it
+  }
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 3000);
 }
@@ -133,16 +137,23 @@ function loadAlphabetMap(map) {
 }
 
 // ---------- VAULT ----------
-function refreshVaultDropdown() {
+async function getVault() {
+  const result = await chrome.storage.local.get("vault");
+  return result.vault || {};
+}
+
+async function saveVault(vault) {
+  await chrome.storage.local.set({ vault });
+}
+
+async function refreshVaultDropdown() {
   vaultSelect.innerHTML = '<option value="">-- Select --</option>';
-  chrome.storage.local.get("vault", res => {
-    const vault = res.vault || {};
-    Object.keys(vault).forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = `${vault[name].name} (${vault[name].author || "?"})`;
-      vaultSelect.appendChild(opt);
-    });
+  const vault = await getVault();
+  Object.keys(vault).forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = `${vault[name].name} (${vault[name].author || "?"})`;
+    vaultSelect.appendChild(opt);
   });
 }
 
@@ -150,97 +161,83 @@ function refreshVaultDropdown() {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTypes();
   buildAlphabetTable();
-  refreshVaultDropdown();
-  chrome.storage.sync.get(["langName", "langAuthor", "alphabetMap"], res => {
-    if (res.langName) langNameInput.value = res.langName;
-    if (res.langAuthor) langAuthorInput.value = res.langAuthor;
-    if (res.alphabetMap) { alphabetMap = res.alphabetMap; loadAlphabetMap(alphabetMap); }
-  });
+  await refreshVaultDropdown();
+  const res = await chrome.storage.sync.get(["langName", "langAuthor", "alphabetMap"]);
+  if (res.langName) langNameInput.value = res.langName;
+  if (res.langAuthor) langAuthorInput.value = res.langAuthor;
+  if (res.alphabetMap) { alphabetMap = res.alphabetMap; loadAlphabetMap(alphabetMap); }
 });
 
 // ---------- SAVE ----------
-document.getElementById("saveBtn").addEventListener("click", () => {
+document.getElementById("saveBtn").addEventListener("click", async () => {
   const name = langNameInput.value.trim();
   if (!name) return showMessage("Enter a language name", "error");
   const author = langAuthorInput.value.trim() || "Anonymous";
 
-  // Deep clone to prevent overwriting previous saved objects
   const map = JSON.parse(JSON.stringify(saveTableToMap()));
   const langData = { name, author, alphabetMap: map };
 
-  chrome.storage.sync.set(langData);
+  await chrome.storage.sync.set(langData);
 
-  chrome.storage.local.get("vault", res => {
-    const vault = res.vault || {};
-    vault[name] = langData; // independent copy for each dictionary
-    chrome.storage.local.set({ vault }, () => {
-      refreshVaultDropdown();
-      showMessage(`Saved "${name}" to Vault`);
-    });
-  });
+  const vault = await getVault();
+  vault[name] = langData;
+  await saveVault(vault);
+
+  await refreshVaultDropdown();
+  showMessage(`Saved "${name}" to Vault`);
 });
 
 // ---------- LOAD LANGUAGE ----------
-vaultSelect.addEventListener("change", e => {
+vaultSelect.addEventListener("change", async (e) => {
   const sel = e.target.value;
   if (!sel) return;
-  chrome.storage.local.get("vault", res => {
-    const vault = res.vault || {};
-    const lang = vault[sel];
-    if (!lang) return;
-    langNameInput.value = lang.name;
-    langAuthorInput.value = lang.author || "";
-    alphabetMap = JSON.parse(JSON.stringify(lang.alphabetMap)); // deep clone
-    loadAlphabetMap(alphabetMap);
-    chrome.storage.sync.set(lang);
-    showMessage(`Loaded "${lang.name}"`);
-  });
+  const vault = await getVault();
+  const lang = vault[sel];
+  if (!lang) return;
+  langNameInput.value = lang.name;
+  langAuthorInput.value = lang.author || "";
+  alphabetMap = JSON.parse(JSON.stringify(lang.alphabetMap)); // deep clone
+  loadAlphabetMap(alphabetMap);
+  await chrome.storage.sync.set(lang);
+  showMessage(`Loaded "${lang.name}"`);
 });
 
 // ---------- EXPORT / IMPORT SINGLE ----------
-document.getElementById("exportBtn").addEventListener("click", () => {
+document.getElementById("exportBtn").addEventListener("click", async () => {
   const name = langNameInput.value.trim();
   if (!name) return showMessage("No language selected", "error");
-  chrome.storage.local.get("vault", res => {
-    const vault = res.vault || {};
-    const lang = vault[name];
-    if (!lang) return showMessage("Language not found", "error");
-    const blob = new Blob([JSON.stringify(lang, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `${name}.lngz`; a.click();
-    URL.revokeObjectURL(url);
-    showMessage(`Exported "${name}.lngz"`);
-  });
+  const vault = await getVault();
+  const lang = vault[name];
+  if (!lang) return showMessage("Language not found", "error");
+  const blob = new Blob([JSON.stringify(lang, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${name}.lngz`; a.click();
+  URL.revokeObjectURL(url);
+  showMessage(`Exported "${name}.lngz"`);
 });
 
 importFile.addEventListener("change", async e => {
   const file = e.target.files[0]; if (!file) return;
   const text = await file.text();
   const lang = JSON.parse(text);
-  chrome.storage.local.get("vault", res => {
-    const vault = res.vault || {};
-    vault[lang.name] = lang;
-    chrome.storage.local.set({ vault }, () => {
-      refreshVaultDropdown();
-      showMessage(`Imported "${lang.name}"`);
-    });
-  });
+  const vault = await getVault();
+  vault[lang.name] = lang;
+  await saveVault(vault);
+  await refreshVaultDropdown();
+  showMessage(`Imported "${lang.name}"`);
 });
 
 // ---------- VAULT ZIP ----------
-document.getElementById("exportVault").addEventListener("click", async () => {
-  chrome.storage.local.get("vault", async res => {
-    const vault = res.vault || {};
-    const keys = Object.keys(vault);
-    if (!keys.length) return showMessage("Vault is empty", "error");
+document.getElementById("exportVault").addEventListener("click", async () => {  const vault = await getVault();
+  const keys = Object.keys(vault);
+  if (!keys.length) return showMessage("Vault is empty", "error");
 
-    const zip = new JSZip();
-    for (const [name, lang] of Object.entries(vault)) zip.file(`${name}.lngz`, JSON.stringify(lang, null, 2));
-    const blob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = "Languagizer_Vault.zip"; a.click(); URL.revokeObjectURL(url);
-    showMessage(`Exported ${keys.length} languages to ZIP`);
-  });
+  const zip = new JSZip();
+  for (const [name, lang] of Object.entries(vault)) zip.file(`${name}.lngz`, JSON.stringify(lang, null, 2));
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = "Languagizer_Vault.zip"; a.click(); URL.revokeObjectURL(url);
+  showMessage(`Exported ${keys.length} languages to ZIP`);
 });
 
 importVault.addEventListener("change", async e => {
@@ -253,23 +250,38 @@ importVault.addEventListener("change", async e => {
     const lang = JSON.parse(content);
     vault[lang.name] = lang;
   }
-  chrome.storage.local.get("vault", res => {
-    const existing = res.vault || {};
-    chrome.storage.local.set({ vault: { ...existing, ...vault } }, () => {
-      refreshVaultDropdown();
-      showMessage(`Imported ${Object.keys(vault).length} languages from Vault ZIP`);
-    });
-  });
+  const existing = await getVault();
+  await saveVault({ ...existing, ...vault });
+  await refreshVaultDropdown();
+  showMessage(`Imported ${Object.keys(vault).length} languages from Vault ZIP`);
 });
 
 // ---------- DECODE ----------
-document.getElementById("decodeBtn").addEventListener("click", () => {
+document.getElementById("decodeBtn").addEventListener("click", async () => {
   const input = decodeInput.value;
   if (!input.trim()) return showMessage("Enter text to decode", "error");
-  chrome.storage.sync.get(["alphabetMap"], res => {
-    const map = res.alphabetMap || {};
-    const reverse = Object.fromEntries(Object.entries(map).map(([k, v]) => [v.value, k]));
-    decodeOutput.value = input.split("").map(c => reverse[c] || c).join("");
-    showMessage("Decoded successfully!");
-  });
+
+  const res = await chrome.storage.sync.get(["alphabetMap"]);
+  const map = res.alphabetMap || {};
+
+  // Create a reverse map and a regex to find all symbols
+  const reverseMap = {};
+  const symbols = [];
+  for (const [letter, entry] of Object.entries(map)) {
+    if (entry.value && entry.value !== letter) {
+      reverseMap[entry.value] = letter;
+      // Escape special regex characters in the symbol
+      symbols.push(entry.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    }
+  }
+
+  if (symbols.length === 0) {
+    decodeOutput.value = input; // No map to decode with
+    return showMessage("No active language map to decode with", "error");
+  }
+
+  const regex = new RegExp(symbols.join('|'), 'g');
+  decodeOutput.value = input.replace(regex, (match) => reverseMap[match] || match);
+
+  showMessage("Decoded successfully!");
 });
