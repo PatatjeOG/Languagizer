@@ -1,0 +1,206 @@
+/* ---------- BASE ---------- */
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  padding: 16px;
+  width: 360px;
+  background: #fafafa;
+  color: #333;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ---------- HEADINGS ---------- */
+h1 {
+  font-size: 20px;
+  margin-bottom: 14px;
+  text-align: center;
+  color: #2c3e50;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.05);
+}
+
+/* ---------- LABELS & INPUTS ---------- */
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 500;
+  color: #555;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 95%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  color: #333;
+  transition: border 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 6px rgba(52,152,219,0.3);
+  outline: none;
+}
+
+textarea {
+  resize: none;
+  min-height: 60px;
+}
+
+/* ---------- BUTTONS ---------- */
+button,
+label.button {
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(to bottom, #f2f2f2, #e8e8e8);
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+button:hover,
+label.button:hover {
+  background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+  border-color: #bbb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ---------- TABLE ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+td {
+  padding: 6px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+tr:hover td {
+  background: rgba(52,152,219,0.05);
+  border-radius: 4px;
+}
+
+/* ---------- MESSAGE ---------- */
+.message {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.message.show {
+  opacity: 1;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 14px;
+  color: #777;
+}
+
+footer a {
+  color: #3498db;
+  text-decoration: none;
+  margin: 0 4px;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  text-decoration: underline;
+  color: #1d6fa5;
+}
+
+/* ---------- HR ---------- */
+hr {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+/* ---------- DARK THEME ---------- */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1e1e1e;
+    color: #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  h1 {
+    color: #f0f0f0;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+
+  input[type="text"],
+  select,
+  textarea {
+    background: #2b2b2b;
+    color: #ddd;
+    border: 1px solid #555;
+   
+  }
+
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 6px rgba(52,152,219,0.5);
+  }
+
+  button,
+  label.button {
+    background: linear-gradient(to bottom, #2b2b2b, #242424);
+    border: 1px solid #555;
+    color: #ddd;
+  }
+
+  button:hover,
+  label.button:hover {
+    background: linear-gradient(to bottom, #3a3a3a, #2f2f2f);
+    border-color: #777;
+  }
+
+  td {
+    border-bottom: 1px solid #444;
+  }
+
+  tr:hover td {
+    background: rgba(52,152,219,0.15);
+  }
+
+  footer {
+    color: #aaa;
+  }
+
+  footer a {
+    color: #5dade2;
+  }
+
+  footer a:hover {
+    color: #2980b9;
+  }
+
+  hr {
+    border-top: 1px solid #444;
+  }
+}

@@ -1,0 +1,26 @@
+{
+     "manifest_version": 3,
+     "name": "Languagizer",
+     "version": "1.0",
+     "description": "Translate text wrapped in !(...) using your own language mapping.",
+     "permissions": ["storage", "activeTab", "scripting"],
+     "action": {
+       "default_popup": "popup.html",
+       "default_title": "Languagizer"
+     },
+     "content_scripts": [
+       {
+         "matches": ["<all_urls>"],
+         "js": ["content.js"],
+         "run_at": "document_idle"
+       }
+     ],
+     "web_accessible_resources": [
+          {
+            "resources": ["types/*"],
+            "matches": ["<all_urls>"]
+          }
+        ]
+        
+   }
+   

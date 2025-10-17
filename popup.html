@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Languagizer</title>
+  <link rel="stylesheet" href="popup.css">
+
+</head>
+<body>
+  <h1>🌐 Languagizer</h1>
+
+  <label for="vaultSelect">Active Language</label>
+  <select id="vaultSelect"><option value="">-- Select --</option></select>
+
+  <label>Name</label>
+  <input id="langName" type="text" placeholder="Language name">
+
+  <label>Author</label>
+  <input id="langAuthor" type="text" placeholder="Your name">
+
+  <label>Alphabet Mapping (A–Z)</label>
+  <table id="alphabetTable"></table>
+
+  <hr>
+  <button id="saveBtn">💾 Save</button>
+  <button id="exportBtn">⬇️ Export</button>
+  <label for="importFile" class="button">⬆️ Import</label>
+  <input id="importFile" type="file" accept=".lngz" style="display:none;">
+
+  <hr>
+  <h3>Vault Management</h3>
+  <button id="exportVault">📦 Export Vault</button>
+  <label for="importVault" class="button">📂 Import Vault</label>
+  <input id="importVault" type="file" accept=".zip" style="display:none;">
+
+  <hr>
+  <h3>Decode Secret Message</h3>
+  <textarea id="decodeInput" placeholder="Paste encoded text here..."></textarea>
+  <button id="decodeBtn">🔍 Decode</button>
+  <textarea id="decodeOutput" readonly placeholder="Decoded text will appear here..."></textarea>
+
+  <div id="message" class="message"></div>
+  <hr>
+  <footer style="text-align:center; font-size:12px; margin-top:10px;">
+    <a href="meta/about.html" target="_blank">About</a> |
+    <a href="meta/policy.html" target="_blank">Privacy Policy</a> |
+    <a href="meta/terms.html" target="_blank">Terms</a>
+  </footer>
+  
+  <script src="lib/jszip.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
