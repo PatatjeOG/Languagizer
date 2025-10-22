@@ -118,7 +118,9 @@ function saveTableToMap() {
   letters.forEach(l => {
     const typeSelect = document.getElementById(`type_${l}`);
     const field = document.getElementById(`symbol_${l}`);
-    map[l] = { type: typeSelect.value, value: field.value || l };
+    // Sanitize the custom symbol value. If empty, default to the letter itself.
+    const sanitizedValue = sanitize(field.value).trim();
+    map[l] = { type: typeSelect.value, value: sanitizedValue || l };
   });
   alphabetMap = map;
   return map;
@@ -134,6 +136,15 @@ function loadAlphabetMap(map) {
     const field = document.getElementById(`symbol_${l}`);
     field.value = map[l].value;
   });
+}
+
+// ---------- CLEAR FORM ----------
+function clearForm(clearAuthor = true) {
+  langNameInput.value = "";
+  if (clearAuthor) {
+    langAuthorInput.value = "";
+  }
+  buildAlphabetTable(); // This resets the table to its default state
 }
 
 // ---------- VAULT ----------
@@ -170,9 +181,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // ---------- SAVE ----------
 document.getElementById("saveBtn").addEventListener("click", async () => {
-  const name = langNameInput.value.trim();
+  const name = sanitize(langNameInput.value).trim();
   if (!name) return showMessage("Enter a language name", "error");
-  const author = langAuthorInput.value.trim() || "Anonymous";
+  const author = sanitize(langAuthorInput.value).trim() || "Anonymous";
 
   const map = JSON.parse(JSON.stringify(saveTableToMap()));
   const langData = { name, author, alphabetMap: map };
@@ -185,6 +196,40 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 
   await refreshVaultDropdown();
   showMessage(`Saved "${name}" to Vault`);
+});
+
+// ---------- DELETE ----------
+document.getElementById("deleteBtn").addEventListener("click", async () => {
+  const name = sanitize(langNameInput.value).trim();
+  if (!name) return showMessage("No language loaded to delete", "error");
+
+  const vault = await getVault();
+  if (!vault[name]) return showMessage(`Language "${name}" not in vault`, "error");
+
+  if (!confirm(`Are you sure you want to delete the language "${name}"? This cannot be undone.`)) {
+    return;
+  }
+
+  // Delete from vault
+  delete vault[name];
+  await saveVault(vault);
+
+  // Check if it was the active language and clear sync storage if so
+  const syncData = await chrome.storage.sync.get("langName");
+  if (syncData.langName === name) {
+    await chrome.storage.sync.remove(["langName", "langAuthor", "alphabetMap"]);
+    // Ask if they want to clear the author field as well
+    if (langAuthorInput.value && confirm(`Do you want to clear the author name "${langAuthorInput.value}" from this session?`)) {
+      clearForm(true);
+    } else {
+      clearForm(false);
+    }
+  } else {
+    clearForm(true); // If it wasn't the active language, just clear the whole form
+  }
+
+  await refreshVaultDropdown();
+  showMessage(`Deleted "${name}" from Vault`);
 });
 
 // ---------- LOAD LANGUAGE ----------
@@ -219,7 +264,7 @@ document.getElementById("exportBtn").addEventListener("click", async () => {
 importFile.addEventListener("change", async e => {
   const file = e.target.files[0]; if (!file) return;
   const text = await file.text();
-  const lang = JSON.parse(text);
+  const lang = JSON.parse(text); // JSON.parse is safe from XSS.
   const vault = await getVault();
   vault[lang.name] = lang;
   await saveVault(vault);
@@ -247,7 +292,7 @@ importVault.addEventListener("change", async e => {
   for (const filename of Object.keys(zip.files)) {
     if (!filename.endsWith(".lngz")) continue;
     const content = await zip.files[filename].async("string");
-    const lang = JSON.parse(content);
+    const lang = JSON.parse(content); // JSON.parse is safe from XSS.
     vault[lang.name] = lang;
   }
   const existing = await getVault();
