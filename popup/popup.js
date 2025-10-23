@@ -3,7 +3,7 @@ function showMessage(text, type="info") {
   const el = document.getElementById("message");
   el.textContent = text;
   if (type === "error") {
-    el.style.color = "#e57373"; // A brighter red for both themes
+    el.style.color = "#c62828"; // A high-contrast red for both themes
   } else {
     el.style.color = ""; // Reset color to let CSS handle it
   }
@@ -39,12 +39,14 @@ async function loadTypes() {
         const arr = await r.json();
         types[t] = { name: t.charAt(0).toUpperCase() + t.slice(1), symbols: arr };
       } catch (e) {
-        console.warn("Failed loading type", t, e);
+        console.warn(`Failed loading symbol set '${t}'.json:`, e);
+        showMessage(`Could not load symbol set: ${t}`, "error");
       }
     }
     types["default"] = { name: "Default", symbols: [] };
   } catch (e) {
     console.error("Failed to load types_manifest.json", e);
+    showMessage("Critical: Could not load symbol sets.", "error");
     types["default"] = { name: "Default", symbols: [] };
   }
 }
@@ -329,4 +331,19 @@ document.getElementById("decodeBtn").addEventListener("click", async () => {
   decodeOutput.value = input.replace(regex, (match) => reverseMap[match] || match);
 
   showMessage("Decoded successfully!");
+});
+
+// ---------- COPY DECODED TEXT ----------
+document.getElementById("copyDecodedBtn").addEventListener("click", () => {
+  const textToCopy = decodeOutput.value;
+  if (!textToCopy) {
+    return showMessage("Nothing to copy", "error");
+  }
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    showMessage("Copied to clipboard!");
+  }).catch(err => {
+    console.error("Clipboard write failed: ", err);
+    showMessage("Failed to copy text", "error");
+  });
 });

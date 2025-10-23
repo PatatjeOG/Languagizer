@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Languagizer</title>  <link rel="icon" href="icons/icon16.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Languagizer</title>  <link rel="icon" href="../icons/icon16.png">
   <link rel="stylesheet" href="popup.css">
 
 </head>
 <body>
-  <h1><img src="icons/icon32.png" alt="Languagizer Logo"> Languagizer</h1>
+  <h1><img src="../icons/icon32.png" alt="Languagizer Logo"> Languagizer</h1>
 
   <label for="vaultSelect">Active Language</label>
   <select id="vaultSelect"><option value="">-- Select --</option></select>
@@ -38,18 +39,19 @@
   <h3>Decode Secret Message</h3>
   <textarea id="decodeInput" placeholder="Paste encoded text here..."></textarea>
   <button id="decodeBtn">🔍 Decode</button>
+  <button id="copyDecodedBtn">📋 Copy</button>
   <textarea id="decodeOutput" readonly placeholder="Decoded text will appear here..."></textarea>
 
   <div id="message" class="message"></div>
   <hr>
-  <footer>    <img src="icons/icon16.png" alt="logo">
-    <a href="meta/about.html" target="_blank">About</a> |
-    <a href="meta/policy.html" target="_blank">Privacy Policy</a> |
-    <a href="meta/terms.html" target="_blank">Terms</a>
+  <footer>    <img src="../icons/icon16.png" alt="logo">
+    <a href="../meta/about.html" target="_blank">About</a> |
+    <a href="../meta/policy.html" target="_blank">Privacy Policy</a> |
+    <a href="../meta/terms.html" target="_blank">Terms</a>
   </footer>
   
-  <script src="lib/jszip.min.js"></script>
-  <script src="validator.js"></script>
+  <script src="../lib/jszip.min.js"></script>
+  <script src="../scripts/validator.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
