@@ -1,6 +1,7 @@
 [
      "emoji",
      "symbols",
+     "bits",
      "runes",
      "math",
      "ascii"

@@ -17,6 +17,7 @@ const langNameInput = document.getElementById("langName");
 const langAuthorInput = document.getElementById("langAuthor");
 const importFile = document.getElementById("importFile");
 const importVault = document.getElementById("importVault");
+const activeLangDisplay = document.getElementById("activeLangDisplay");
 const alphabetTable = document.getElementById("alphabetTable");
 const decodeInput = document.getElementById("decodeInput");
 const decodeOutput = document.getElementById("decodeOutput");
@@ -159,7 +160,11 @@ async function saveVault(vault) {
   await chrome.storage.local.set({ vault });
 }
 
-async function refreshVaultDropdown() {
+/**
+ * Refreshes the vault dropdown, populating it with saved languages.
+ * @param {string | null} activeLangName The name of the language to set as active in the dropdown.
+ */
+async function refreshVaultDropdown(activeLangName = null) {
   vaultSelect.innerHTML = '<option value="">-- Select --</option>';
   const vault = await getVault();
   Object.keys(vault).forEach(name => {
@@ -168,14 +173,25 @@ async function refreshVaultDropdown() {
     opt.textContent = `${vault[name].name} (${vault[name].author || "?"})`;
     vaultSelect.appendChild(opt);
   });
+
+  // Set the dropdown to the currently active language
+  if (activeLangName && vault[activeLangName]) {
+    vaultSelect.value = activeLangName;
+  }
 }
 
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTypes();
   buildAlphabetTable();
-  await refreshVaultDropdown();
+
   const res = await chrome.storage.sync.get(["langName", "langAuthor", "alphabetMap"]);
+
+  // First, refresh the dropdown and set its value.
+  await refreshVaultDropdown(res.langName);
+  activeLangDisplay.textContent = `Active Language: ${res.langName || "None"}`;
+
+  // Then, load all data into the form fields.
   if (res.langName) langNameInput.value = res.langName;
   if (res.langAuthor) langAuthorInput.value = res.langAuthor;
   if (res.alphabetMap) { alphabetMap = res.alphabetMap; loadAlphabetMap(alphabetMap); }
@@ -183,26 +199,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // ---------- SAVE ----------
 document.getElementById("saveBtn").addEventListener("click", async () => {
-  const name = sanitize(langNameInput.value).trim();
+  const name = langNameInput.value.trim();
   if (!name) return showMessage("Enter a language name", "error");
-  const author = sanitize(langAuthorInput.value).trim() || "Anonymous";
+  const author = langAuthorInput.value.trim() || "Anonymous";
 
   const map = JSON.parse(JSON.stringify(saveTableToMap()));
   const langData = { name, author, alphabetMap: map };
 
-  await chrome.storage.sync.set(langData);
+  await chrome.storage.sync.set({ langName: name, langAuthor: author, alphabetMap: map });
 
   const vault = await getVault();
   vault[name] = langData;
   await saveVault(vault);
 
-  await refreshVaultDropdown();
+  await refreshVaultDropdown(name); // Pass the current name to re-select it
+  activeLangDisplay.textContent = `Active Language: ${name}`;
   showMessage(`Saved "${name}" to Vault`);
 });
 
 // ---------- DELETE ----------
 document.getElementById("deleteBtn").addEventListener("click", async () => {
-  const name = sanitize(langNameInput.value).trim();
+  const name = langNameInput.value.trim();
   if (!name) return showMessage("No language loaded to delete", "error");
 
   const vault = await getVault();
@@ -229,8 +246,9 @@ document.getElementById("deleteBtn").addEventListener("click", async () => {
   } else {
     clearForm(true); // If it wasn't the active language, just clear the whole form
   }
+  activeLangDisplay.textContent = `Active Language: None`;
 
-  await refreshVaultDropdown();
+  await refreshVaultDropdown(null); // Refresh without a selection
   showMessage(`Deleted "${name}" from Vault`);
 });
 
@@ -245,7 +263,8 @@ vaultSelect.addEventListener("change", async (e) => {
   langAuthorInput.value = lang.author || "";
   alphabetMap = JSON.parse(JSON.stringify(lang.alphabetMap)); // deep clone
   loadAlphabetMap(alphabetMap);
-  await chrome.storage.sync.set(lang);
+  await chrome.storage.sync.set({ langName: lang.name, langAuthor: lang.author, alphabetMap: lang.alphabetMap });
+  activeLangDisplay.textContent = `Active Language: ${lang.name}`;
   showMessage(`Loaded "${lang.name}"`);
 });
 
@@ -270,7 +289,8 @@ importFile.addEventListener("change", async e => {
   const vault = await getVault();
   vault[lang.name] = lang;
   await saveVault(vault);
-  await refreshVaultDropdown();
+  await chrome.storage.sync.set({ langName: lang.name, langAuthor: lang.author, alphabetMap: lang.alphabetMap }); // Set imported language as active
+  await refreshVaultDropdown(lang.name);
   showMessage(`Imported "${lang.name}"`);
 });
 
@@ -299,7 +319,8 @@ importVault.addEventListener("change", async e => {
   }
   const existing = await getVault();
   await saveVault({ ...existing, ...vault });
-  await refreshVaultDropdown();
+  // Note: This does not set any imported language as active in sync storage.
+  await refreshVaultDropdown(vaultSelect.value); // Re-select whatever was active before import
   showMessage(`Imported ${Object.keys(vault).length} languages from Vault ZIP`);
 });
 
@@ -346,36 +367,4 @@ document.getElementById("copyDecodedBtn").addEventListener("click", () => {
     console.error("Clipboard write failed: ", err);
     showMessage("Failed to copy text", "error");
   });
-});
-
-// ---------- LIVE TRANSLATE IN DECODE FIELD ----------
-
-/**
- * Translates text using the currently active alphabetMap in the popup.
- * @param {string} text The text to translate.
- * @returns {string} The translated text.
- */
-function translatePopup(text) {
-  return text
-    .split("")
-    .map((c) => {
-      const entry = alphabetMap[c.toLowerCase()];
-      return entry ? entry.value : c;
-    })
-    .join("");
-}
-
-decodeInput.addEventListener("input", (event) => {
-  const target = event.target;
-  if (!target.value.includes("!(")) return;
-
-  // Check if a language is active
-  if (!alphabetMap || Object.keys(alphabetMap).length === 0) {
-    return; // Don't show a message here, it would be annoying on every keystroke
-  }
-
-  const triggerRegex = /!\(([^)]+)\)/g;
-  // Use a callback with replace to handle multiple instances at once
-  const newValue = target.value.replace(triggerRegex, (match, innerText) => translatePopup(innerText));
-  target.value = newValue;
 });
