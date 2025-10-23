@@ -23,23 +23,29 @@
   <table id="alphabetTable"></table>
 
   <hr>
-  <button id="saveBtn">💾 Save</button>
-  <button id="deleteBtn" class="danger">🗑️ Delete</button>
-  <button id="exportBtn">⬇️ Export</button>
-  <label for="importFile" class="button">⬆️ Import</label> <!-- Styled label for hidden file input -->
-  <input id="importFile" type="file" accept=".lngz" class="hidden-file-input">
+  <div class="button-group">
+    <button id="saveBtn">💾 Save</button>
+    <button id="deleteBtn" class="danger">🗑️ Delete</button>
+    <button id="exportBtn">⬇️ Export</button>
+    <label for="importFile" class="button">⬆️ Import</label> <!-- Styled label for hidden file input -->
+    <input id="importFile" type="file" accept=".lngz" class="hidden-file-input">
+  </div>
 
   <hr>
   <h3>Vault Management</h3>
-  <button id="exportVault">📦 Export Vault</button>
-  <label for="importVault" class="button">📂 Import Vault</label> <!-- Styled label for hidden file input -->
-  <input id="importVault" type="file" accept=".zip" class="hidden-file-input">
+  <div class="button-group">
+    <button id="exportVault">📦 Export Vault</button>
+    <label for="importVault" class="button">📂 Import Vault</label> <!-- Styled label for hidden file input -->
+    <input id="importVault" type="file" accept=".zip" class="hidden-file-input">
+  </div>
 
   <hr>
   <h3>Decode Secret Message</h3>
   <textarea id="decodeInput" placeholder="Paste encoded text here..."></textarea>
-  <button id="decodeBtn">🔍 Decode</button>
-  <button id="copyDecodedBtn">📋 Copy</button>
+  <div class="button-group">
+    <button id="decodeBtn">🔍 Decode</button>
+    <button id="copyDecodedBtn">📋 Copy</button>
+  </div>
   <textarea id="decodeOutput" readonly placeholder="Decoded text will appear here..."></textarea>
 
   <div id="message" class="message"></div>

@@ -10,6 +10,7 @@ body {
   box-sizing: border-box;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 2px solid #609fc4;
 }
 
 /* ---------- HEADINGS ---------- */
@@ -74,7 +75,7 @@ textarea {
 /* ---------- BUTTONS ---------- */
 button,
 label.button {
-  display: inline-block;
+  display: block; /* Let the flex container handle layout */
   margin-top: 10px;
   margin-right: 6px;
   padding: 6px 12px;
@@ -84,6 +85,12 @@ label.button {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* Use gap for spacing instead of margin-right */
 }
 
 /* For hiding the default file input but keeping it accessible */
@@ -97,6 +104,18 @@ label.button:hover {
   border-color: #bbb;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+button.danger {
+  background: linear-gradient(to bottom, #ff6b6b, #ee5253);
+  border-color: #d63031;
+  color: white;
+}
+
+button.danger:hover {
+  background: linear-gradient(to bottom, #ee5253, #d63031);
+  border-color: #b32828;
+}
+
 
 /* ---------- TABLE ---------- */
 table {
@@ -115,6 +134,13 @@ td {
 tr:hover td {
   background: rgba(52,152,219,0.05);
   border-radius: 4px;
+}
+
+/* Fix for input/select width mismatch inside the table */
+#alphabetTable input,
+#alphabetTable select {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ---------- MESSAGE ---------- */
@@ -213,6 +239,16 @@ hr {
     border-color: #777;
   }
 
+  button.danger {
+    background: linear-gradient(to bottom, #d63031, #b32828);
+    border-color: #9a2222;
+  }
+
+  button.danger:hover {
+    background: linear-gradient(to bottom, #b32828, #9a2222);
+    border-color: #7f1c1c;
+  }
+
   td {
     border-bottom: 1px solid #444;
   }
@@ -236,6 +272,23 @@ hr {
   hr {
     border-top: 1px solid #444;
   }
+
+  #activeLangDisplay {
+    background-color: #2a3a4a;
+    border-color: #3a5a7a;
+    color: #a8c7e9;
+  }
+}
+
+/* ---------- ACTIVE LANGUAGE DISPLAY ---------- */
+#activeLangDisplay {
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding: 6px;
+  background-color: #e7f3ff;
+  border: 1px solid #cce0ff;
+  border-radius: 4px;
+  color: #004085;
 }
 
 /* ---------- ACCESSIBILITY ---------- */

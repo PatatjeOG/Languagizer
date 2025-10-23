@@ -204,6 +204,12 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const author = langAuthorInput.value.trim() || "Anonymous";
 
   const map = JSON.parse(JSON.stringify(saveTableToMap()));
+
+  const validationResult = validateMapForDuplicates(map);
+  if (!validationResult.isValid) {
+    return showMessage(validationResult.message, "error");
+  }
+
   const langData = { name, author, alphabetMap: map };
 
   await chrome.storage.sync.set({ langName: name, langAuthor: author, alphabetMap: map });
