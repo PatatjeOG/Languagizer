@@ -347,3 +347,35 @@ document.getElementById("copyDecodedBtn").addEventListener("click", () => {
     showMessage("Failed to copy text", "error");
   });
 });
+
+// ---------- LIVE TRANSLATE IN DECODE FIELD ----------
+
+/**
+ * Translates text using the currently active alphabetMap in the popup.
+ * @param {string} text The text to translate.
+ * @returns {string} The translated text.
+ */
+function translatePopup(text) {
+  return text
+    .split("")
+    .map((c) => {
+      const entry = alphabetMap[c.toLowerCase()];
+      return entry ? entry.value : c;
+    })
+    .join("");
+}
+
+decodeInput.addEventListener("input", (event) => {
+  const target = event.target;
+  if (!target.value.includes("!(")) return;
+
+  // Check if a language is active
+  if (!alphabetMap || Object.keys(alphabetMap).length === 0) {
+    return; // Don't show a message here, it would be annoying on every keystroke
+  }
+
+  const triggerRegex = /!\(([^)]+)\)/g;
+  // Use a callback with replace to handle multiple instances at once
+  const newValue = target.value.replace(triggerRegex, (match, innerText) => translatePopup(innerText));
+  target.value = newValue;
+});

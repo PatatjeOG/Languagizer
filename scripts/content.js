@@ -23,23 +23,59 @@ function translate(text) {
     .join("");
 }
 
-// Handle input events on text fields and textareas
 document.addEventListener("input", (event) => {
   const target = event.target;
-  if (!target || !("value" in target)) return;
+  if (!target) return;
 
-  // Early exit if the trigger sequence isn't present
-  if (!target.value.includes("!(")) return;
+  // Handle standard <input> and <textarea> elements
+  if (target.value && target.value.includes("!(")) {
+    const originalValue = target.value;
+    const triggerRegex = /!\(([^)]+)\)/g;
+    const newValue = originalValue.replace(triggerRegex, (match, innerText) => translate(innerText));
+    
+    if (originalValue !== newValue) {
+      target.value = newValue;
+    }
+    return;
+  }
 
-  const triggerRegex = /!\(([^)]+)\)/g;
-  let value = target.value;
-  const matches = [...value.matchAll(triggerRegex)];
+  // Handle modern rich-text editors (contenteditable divs)
+  if (target.isContentEditable && target.textContent.includes("!(")) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
 
-  matches.forEach((match) => {
-    const innerText = match[1];
-    const translated = translate(innerText);
-    value = value.replace(match[0], translated);
-  });
+    const range = selection.getRangeAt(0);
+    const container = range.startContainer;
 
-  target.value = value;
+    // We only act on text nodes
+    if (container.nodeType !== Node.TEXT_NODE) return;
+
+    const originalText = container.textContent;
+    const triggerRegex = /!\(([^)]+)\)/g;
+
+    // Check if a replacement is needed before modifying the DOM
+    if (!triggerRegex.test(originalText)) return;
+
+    // Create a new text node with the translated content
+    const newText = originalText.replace(triggerRegex, (match, innerText) => translate(innerText));
+    
+    // Avoid unnecessary DOM changes
+    if (newText === originalText) return;
+
+    const newNode = document.createTextNode(newText);
+
+    // To preserve the cursor position, we need to carefully replace the node
+    // and then restore the selection.
+    const parent = container.parentNode;
+    parent.insertBefore(newNode, container);
+    parent.removeChild(container);
+
+    // Restore the cursor to the end of the newly created text node
+    const newRange = document.createRange();
+    newRange.setStart(newNode, newNode.length);
+    newRange.setEnd(newNode, newNode.length);
+
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  }
 });
